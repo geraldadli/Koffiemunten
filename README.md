@@ -16,6 +16,14 @@ npm test
 
 Try: save 10 coffees → confirm demo order → Try the next step → Collect 1 coffee → Use 1 coffee. The next-step button simulates successful funding, unlocks the 10 saved drinks and funds a sample revenue report. The reward card then shows 1 coffee waiting to collect, separate from the 10 spendable coffees. Collecting makes 11 KM; redemption leaves 10 KM. The visual pass shows up to 12 cups, with explicit overflow and fractional balances. Saved, collected and used counts reconcile to the available balance after funding. Refresh resets the local demo.
 
+## Deploy the website on Vercel
+
+Import `geraldadli/Koffiemunten` in Vercel and deploy the `main` branch. Use the repository root (`.`), not a `site` subdirectory. The included `vercel.json` selects **Other** as the framework, skips dependency installation and building, and publishes **dist**. The static website has no runtime npm dependencies and needs no environment variables for this demo.
+
+This publishes only the browser simulation. Solidity compilation/testing remains local; deploying contracts to an EVM network and connecting the website are separate steps. Never put wallet private keys in browser code or public environment variables.
+
+For commercial use, choose Vercel Pro: Hobby is restricted to personal, non-commercial projects. See [Vercel build settings](https://vercel.com/docs/builds/configure-a-build) and [Hobby terms](https://vercel.com/docs/plans/hobby). The existing `.openai/hosting.json` remains available for Sites; it does not control Vercel deployments.
+
 ## What Solidity does
 
 Solidity is the language for the contract, not the website. `contracts/CoffeeCampaign.sol` is an ERC-20 beverage-credit ledger plus one funding campaign. `contracts/MockIDR.sol` is a freely mintable test token with 6 decimals; it is **not real rupiah or a real stablecoin**. KM has 18 decimals; 1 whole KM buys one defined house latte.
