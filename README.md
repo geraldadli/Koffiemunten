@@ -1,6 +1,6 @@
 # Koffiemunten
 
-A working browser prototype and executable Solidity starter for one café campaign. The published website is a **simulation**. It is not connected to a wallet, RPC endpoint, real payment service, or deployed contract. No money is collected. The café and campaign progress are illustrative; the coffee image comes from the supplied pitch deck.
+A working browser prototype and executable Solidity starter for one café campaign. The published website is a **simulation**. It is not connected to a wallet, RPC endpoint, real payment service, or deployed contract. No money is collected. The café and campaign progress are illustrative. The card's latte photo comes from the supplied pitch deck; the hero coffee artwork is AI-generated. Native CSS scroll animations respect reduced-motion preferences and fall back to a static layout in unsupported browsers.
 
 ## Run it
 

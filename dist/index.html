@@ -4,7 +4,7 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Koffiemunten — Coffee, with a little more in it.</title>
   <meta name="description" content="Explore a coffee crowdfunding prototype: back a café, hold coffee credits, and see how revenue becomes more coffee.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%23546bff'/%3E%3Cpath d='M12 8v24m17-19-15 12m5-4 11 11' stroke='white' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%23daa06a'/%3E%3Cpath d='M12 8v24m17-19-15 12m5-4 11 11' stroke='%23271a12' stroke-width='4' fill='none'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
@@ -16,14 +16,18 @@
   </header>
   <main id="main" class="wrap">
     <section id="campaign" aria-labelledby="hero-title">
-      <div class="intro"><span class="eyebrow">KOFFIE CLUB · JAKARTA · DEMO CAFÉ</span><h1 id="hero-title">Support your café.<br>Enjoy <em>more coffee.</em></h1><p>Save coffees for later. Help your café grow.</p></div>
+      <div class="intro">
+        <div class="hero-copy"><span class="eyebrow">YOUR DAILY CUP. THEIR NEXT CHAPTER.</span><h1 id="hero-title">GOOD COFFEE.<br>BIG DREAMS<span class="accent-dot">.</span></h1><p>Help your café open its next spot.<br>Share in its growth, one coffee at a time.</p><a class="button hero-button" href="#back-cafe">Back the next café</a><span class="hero-footnote">Potential rewards in coffee. No guaranteed return.</span></div>
+        <div class="hero-visual"><img class="hero-coffee" src="./assets/coffee-pair.png" alt="Creamy latte art, an iced caramel-colored coffee, and roasted coffee beans" width="1280" height="1280" fetchpriority="high"><span class="coffee-stamp" aria-hidden="true">SMALL SIPS.<br>BIG PLANS.</span><span class="photo-note">A TASTE OF WHAT'S NEXT.</span></div>
+      </div>
+      <div class="campaign-heading glide" id="back-cafe"><div><span class="eyebrow">KOFFIE CLUB · JAKARTA · DEMO CAFÉ</span><h2>LET'S GROW<span class="accent-dot">.</span></h2></div><p>More places to meet.<br>More coffee to share.</p></div>
       <div class="campaign-grid">
-        <article class="cafe-card" aria-labelledby="cafe-name">
+        <article class="cafe-card glide" aria-labelledby="cafe-name">
           <img class="cafe-photo" src="./assets/latte.png" alt="A house latte with freshly poured milk art" width="441" height="334">
-          <div class="cafe-info"><div class="cafe-heading"><h2 id="cafe-name">A new home for good coffee.</h2><span class="pill" id="campaign-status">Taking support</span></div><p>Help Koffie Club open its next café.</p><progress id="funding-progress" max="120000000" value="90000000" aria-label="Café funding progress">75%</progress><div class="progress-caption"><span id="funded-percent">75% of the goal</span><span>Demo progress</span></div></div>
+          <div class="cafe-info"><div class="cafe-heading"><h2 id="cafe-name">YOUR NEXT COFFEE SPOT.</h2><span class="pill" id="campaign-status">Taking support</span></div><p>Support the next branch, from the first pour.</p><progress id="funding-progress" max="120000000" value="90000000" aria-label="Café funding progress">75%</progress><div class="progress-caption"><span id="funded-percent">75% of the goal</span><span>Demo progress</span></div></div>
         </article>
-        <form class="order-card" id="contribution-form">
-          <span class="eyebrow">COFFEE FOR LATER</span><h2>House latte</h2><p>Rp37,500 per coffee</p>
+        <form class="order-card glide" id="contribution-form">
+          <span class="eyebrow">FUTURE COFFEE. FRESH POSSIBILITIES.</span><h2>House latte</h2><p>Rp37,500 per coffee</p>
           <label for="quantity">How many coffees?</label><div class="quantity-control"><button type="button" id="minus" aria-label="One fewer coffee">−</button><input id="quantity" name="quantity" type="number" min="1" max="100" step="1" value="4" required inputmode="numeric"><button type="button" id="plus" aria-label="One more coffee">+</button></div>
           <div class="cost-row"><span>Total</span><strong id="order-total">Rp150,000</strong></div>
           <button type="submit" class="button primary full" id="contribute-button">Save my coffees</button>
@@ -32,16 +36,16 @@
         </form>
       </div>
     </section>
-    <section class="wallet-section" id="wallet" aria-labelledby="wallet-heading">
-      <div class="section-heading"><h2 id="wallet-heading">My coffees</h2><button id="reset" class="text-button">Start demo again</button></div>
+    <section class="wallet-section glide" id="wallet" aria-labelledby="wallet-heading">
+      <div class="section-heading"><h2 id="wallet-heading">YOUR COFFEES<span class="accent-dot">.</span></h2><button id="reset" class="text-button">Start demo again</button></div>
       <div class="balance-card"><div><span class="balance-label">Ready to enjoy</span><div class="balance-value"><strong id="coffee-balance">0</strong> <span>coffees</span></div><p id="balance-description">Your saved coffees will appear here.</p></div><div class="balance-action"><button class="button primary" id="advance" hidden>Try the next step</button><button class="button primary" id="redeem" disabled>Use 1 coffee</button><p id="next-hint">Save a few coffees to get started.</p></div></div>
       <details class="history"><summary>My activity</summary><ol id="activity"><li>No coffees saved yet.</li></ol></details>
     </section>
-    <section class="learn-section" id="learn" aria-labelledby="learn-heading">
-      <h2 id="learn-heading">A few things to know</h2>
+    <section class="learn-section glide" id="learn" aria-labelledby="learn-heading">
+      <h2 id="learn-heading">THE SMALL PRINT<span class="accent-dot">.</span></h2>
       <details><summary>How does it work?</summary><p>Choose your coffees and support the café's funding goal. When it succeeds, your coffees become available. The café shares part of its sales as extra coffees for supporters.</p><p>This demo lets you skip ahead and try it. Nothing is purchased.</p></details>
       <details id="price-details"><summary>Why Rp37,500? What if the goal isn't reached?</summary><p>Each coffee includes Rp25,000 set aside for your drink and Rp12,500 to help the café grow. You can request your money back if the funding goal isn't reached.</p><p>The money set aside doesn't guarantee the café will stay open or serve your drink.</p></details>
-      <details><summary>How many extra coffees could I receive?</summary><p>It depends on café sales and how much you originally supported. This example assumes the funding goal is reached; it isn't a promised return.</p><div class="calculator"><label for="revenue-slider">Example café sales <strong id="revenue-label">Rp80,000,000</strong></label><input id="revenue-slider" type="range" min="0" max="160000000" step="1000000" value="80000000"><p>For <b id="example-units">4</b> coffees saved: <strong class="extra-result"><span id="example-reward">0.4</span> extra coffees</strong></p></div><p>The café puts aside 10% of reported sales for supporters. Reports must arrive within 12 months of successful funding. Drinking your coffees doesn't reduce your share.</p></details>
+      <details><summary>What could I get as the café grows?</summary><p>Your potential return is extra coffees, based on reported café sales and your original support. This version doesn't offer cash profit or company shares. The example below isn't a forecast.</p><div class="calculator"><label for="revenue-slider">Example café sales <strong id="revenue-label">Rp80,000,000</strong></label><input id="revenue-slider" type="range" min="0" max="160000000" step="1000000" value="80000000"><p>For <b id="example-units">4</b> coffees saved: <strong class="extra-result"><span id="example-reward">0.4</span> extra coffees</strong></p></div><p>The café puts aside 10% of reported sales for supporters. Reports must arrive within 12 months of successful funding. Drinking your coffees doesn't reduce your share.</p></details>
       <details><summary>Any other limits I should know?</summary><p>Use whole coffees. Leftover portions may stay unusable when rewards end. You can't sell these coffees or exchange them for cash.</p><p>The service can pause access or suspend an account. Refunds for unsuccessful funding stay available. There is no café-closure refund process after successful funding in this prototype.</p><p>This is a practice version. A real launch needs agreed customer terms, verified café sales, and legal and security review.</p></details>
       <details><summary>For the curious: the technology</summary><p>The planned service uses blockchain records to track coffees and prevent double use. This website is a simulation; it isn't connected to a blockchain.</p><p><a href="./contracts/CoffeeCampaign.sol" target="_blank" rel="noopener">Read the Solidity contract</a></p></details>
     </section>
