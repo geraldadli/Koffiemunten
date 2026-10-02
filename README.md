@@ -14,7 +14,7 @@ npm run compile
 npm test
 ```
 
-Try: save 10 coffees → confirm demo order → Try the next step → Use 1 coffee. The next-step button simulates successful funding, a funded revenue report and claiming the coffees together. That produces 11 KM, then 10 KM after redemption. Refresh resets the local demo.
+Try: save 10 coffees → confirm demo order → Try the next step → Collect 1 coffee → Use 1 coffee. The next-step button simulates successful funding, unlocks the 10 saved drinks and funds a sample revenue report. The reward card then shows 1 coffee waiting to collect, separate from the 10 spendable coffees. Collecting makes 11 KM; redemption leaves 10 KM. The visual pass shows up to 12 cups, with explicit overflow and fractional balances. Saved, collected and used counts reconcile to the available balance after funding. Refresh resets the local demo.
 
 ## What Solidity does
 
@@ -58,6 +58,35 @@ claimable = entitled − previouslyClaimedRewardCredits
 Base credits and rewards use the same KM token. **Reward rights stay in a separate, fixed original-contribution ledger.** Redeeming KM does not erase those rights; reward KM does not compound them. Transfers and investment-right trading are deliberately disabled.
 
 For a standard non-rebasing, exact-transfer payment token, retained principal plus revenue deposits cover issued and unclaimed beverage credits at the fixed price. Division rounds down, leaving dust in reserve. Unsupported incoming transfer amounts revert. Production must explicitly vet the settlement token; the contract cannot generally defend against a malicious asset, later rebases, freezes or changes in its economic value.
+
+## Could supporters receive cash? Proposed next model, not implemented
+
+**Today: coffee only.** `redeem()` burns coffee credits and pays the café treasury. It never pays the holder. Transfers are disabled. Only an unsuccessful/cancelled funding campaign offers a payment-asset refund; there is no successful-campaign cash exit. A displayed rupiah coffee value is not a cash balance, resale price, or profit.
+
+For a cash-return product, use two balances rather than adding cash-out to every existing KM:
+
+| Balance | What funds it | What the supporter can do |
+| --- | --- | --- |
+| Coffee pass | The original beverage reserve, plus any earnings converted into coffee | Redeem defined drinks; no automatic cash exit |
+| Available earnings (proposed) | The café's actual revenue-allocation deposits | Withdraw through the chosen payout rail **or** convert into coffee, once |
+
+The original support ledger continues to determine each person's share. Using drinks, collecting rewards or withdrawing earnings must not erase that share; new reward coffees must not acquire additional shares. A larger café valuation does not increase a coffee's redemption value or create equity ownership. The current campaign's revenue-reporting window is 12 months; later expansion is not an unlimited entitlement.
+
+Example using the current illustrative terms: 10 original units cost Rp375,000. Rp250,000 backs the 10 drinks and Rp125,000 becomes café growth funding. A funded report of Rp80m sales allocates Rp8m across 3,200 original units. A 10-unit backer gets Rp25,000 of beverage value today. Under the proposed cash model, that **same** Rp25,000 could instead be available earnings, redeemable for one additional coffee or withdrawable before any fees/tax. It cannot fund both choices. This is not a returned Rp375,000 investment or proof of net profit. Ten percent more cups is not a 10% cash ROI.
+
+Minimal future accounting, all in integer settlement-asset units:
+
+```text
+cumulativeAllocation += actualDeposit
+entitlement = floor(originalUnits * cumulativeAllocation / successfulTotalUnits)
+availableEarnings = entitlement - withdrawn - convertedToCoffee
+```
+
+The future contract must keep earned funds separate from the beverage reserve, consume entitlement before external transfers, and move backing into the beverage reserve when earnings are converted. It must reject double claims and never pay cash from backing still owed to drink holders. Terms must specify conversion rates, rounding, fees, minimum payouts, reward duration, failed payouts and closure. Already minted coffee-only rewards cannot gain cash rights merely through a UI change; they need an explicit migration and matching backing.
+
+For an Indonesian pilot, evaluate regulated rupiah payment/payout providers and the appropriate crowdfunding route with qualified local counsel. OJK's POJK 17/2025 governs securities crowdfunding, while Bank Indonesia identifies rupiah as legal tender for domestic payments. This is a product design proposal, not a determination of classification or permission to launch. Calling a revenue-linked instrument a coffee receipt does not settle its classification. Sources: [OJK regulation](https://ojk.go.id/id/regulasi/Pages/POJK-17-Tahun-2025-Penawaran-Efek-Melalui-Layanan-Urun-Dana-Berbasis-Teknologi-Informasi.aspx), [Bank Indonesia](https://www.bi.go.id/en/publikasi/ruang-media/news-release/Pages/sp_232521.aspx).
+
+A contract transfers its settlement asset, not bank rupiah by itself. Fiat withdrawal needs a reconciled payout service with unique payout IDs, a pending state, retry/reversal handling and authenticated settlement confirmation. Reporting still needs independently reconcilable sales records: a deposit proves funding, not the truth of the café's revenue. Confirm which sales/branches count and the sustainable sharing rate; the example's 10% of gross sales is not a tested business margin.
 
 ## Website → wallet → contract
 
