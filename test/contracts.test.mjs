@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createHardhatRuntimeEnvironment } from 'hardhat/hre';
 import { BrowserProvider, ContractFactory, id, MaxUint256, parseUnits } from 'ethers';
 import { compileContracts } from '../scripts/compile.mjs';
+import { CONFIG, connectWallet, readWallet, sendTransaction, ensureAllowance, friendlyError, receiptReference } from '../dist/chain.js';
 
 const artifacts = compileContracts();
 const money = n => parseUnits(String(n), 6);
@@ -10,7 +11,7 @@ const km = n => parseUnits(String(n), 18);
 const send = async promise => (await promise).wait();
 
 test('Solidity escrow, reserve, pro-rata rewards, redemption and failure protections', async t => {
-  const hre = await createHardhatRuntimeEnvironment({ networks: { test: { type: 'edr-simulated', chainType: 'l1', hardfork: 'shanghai' } } });
+  const hre = await createHardhatRuntimeEnvironment({ networks: { test: { type: 'edr-simulated', chainType: 'l1', hardfork: 'shanghai', chainId: 11155111 } } });
   const connection = await hre.network.create('test');
   const rpc = connection.provider;
   const provider = new BrowserProvider(rpc, undefined, { cacheTimeout: -1 }); provider.pollingInterval = 10;
@@ -127,6 +128,63 @@ test('Solidity escrow, reserve, pro-rata rewards, redemption and failure protect
     assert.equal(await fractional.balanceOf(alice.address), km(2));
     assert.equal(await fractional.balanceOf(bob.address), km(4));
     assert.equal(await asset.balanceOf(await fractional.getAddress()), money(150000));
+  });
+  await t.test('website wallet adapter funds, claims, shares and redeems with confirmed receipts', async () => {
+    const demo = await create({ goalUnits: 2, capUnits: 2 });
+    const config = { ...CONFIG, campaign: await demo.getAddress(), asset: assetAddress };
+    let selected = alice.address, chain = '0xaa36a7';
+    const walletRpc = { request: ({ method, params }) => {
+      if (method === 'eth_accounts' || method === 'eth_requestAccounts') return Promise.resolve([selected]);
+      if (method === 'eth_chainId') return Promise.resolve(chain);
+      return rpc.request({ method, params });
+    } };
+    const wallet = await connectWallet(walletRpc, config);
+    wallet.provider.pollingInterval = 10;
+    const events = [], update = event => events.push(event);
+    const transaction = (title, submit) => sendTransaction(wallet, title, submit, update);
+    try {
+      let state = await readWallet(wallet);
+      assert.equal(state.balanceOf, 0n);
+      assert.equal(state.isOwner, false);
+      await send(asset.connect(alice).approve(config.campaign, 0));
+      await ensureAllowance(wallet, money(75000), update);
+      assert.equal(await asset.allowance(alice.address, config.campaign), money(75000), 'approval is exact, not unlimited');
+      await transaction('Save coffees', () => wallet.campaign.contribute(2));
+      await transaction('Finish funding', () => wallet.campaign.finalize());
+      state = await readWallet(wallet);
+      assert.equal(state.claimable, km(2));
+      await transaction('Collect coffees', () => wallet.campaign.claim());
+      await send(demo.reportRevenue(1, money(250000), id('website-revenue')));
+      state = await readWallet(wallet);
+      assert.equal(state.claimableRewards, km(1));
+      await transaction('Collect reward', () => wallet.campaign.claim());
+      const before = await readWallet(wallet);
+      await transaction('Use one coffee', () => wallet.campaign.redeem(1, receiptReference()));
+      state = await readWallet(wallet);
+      assert.equal(state.balanceOf, km(2));
+      assert.equal(state.used, km(1));
+      assert.equal(state.cash, before.cash, 'redeeming never charges the supporter demo rupiah again');
+      assert.equal(state.reserve, before.reserve - money(25000));
+      assert.equal(state.treasuryBalance, before.treasuryBalance + money(25000));
+      assert.deepEqual(events.slice(0, 3).map(e => e.stage), ['wallet', 'pending', 'confirmed']);
+      assert.equal(events.filter(e => e.stage === 'confirmed').length, 6);
+      let writes = 0;
+      chain = '0x1';
+      await assert.rejects(transaction('Wrong network', () => { writes++; }), /Sepolia/);
+      chain = '0xaa36a7'; selected = bob.address;
+      await assert.rejects(transaction('Wrong account', () => { writes++; }), /account changed/);
+      assert.equal(writes, 0, 'account/network changes stop writes before signing');
+      selected = alice.address;
+      const count = events.filter(e => e.stage === 'confirmed').length;
+      await assert.rejects(transaction('Rejected', () => { throw Object.assign(Error('rejected'), { code: 'ACTION_REJECTED' }); }));
+      assert.equal(events.filter(e => e.stage === 'confirmed').length, count, 'rejection is never marked successful');
+      assert.match(friendlyError({ code: 'ACTION_REJECTED' }), /cancelled/);
+      assert.match(friendlyError({ code: 'INSUFFICIENT_FUNDS' }), /test ETH/);
+      const receipt = { status: 1, hash: '0xreplacement' };
+      const result = await transaction('Speed up', async () => ({ hash: '0xoriginal', wait: async () => { throw { code: 'TRANSACTION_REPLACED', cancelled: false, reason: 'repriced', receipt }; } }));
+      assert.equal(result.hash, receipt.hash);
+      await assert.rejects(transaction('Reverted', async () => ({ hash: '0xfailed', wait: async () => ({ status: 0 }) })), /did not complete/);
+    } finally { wallet.provider.destroy(); }
   });
   await t.test('reporting expires but existing credits remain redeemable', async () => {
     await rpc.request({ method: 'evm_increaseTime', params: [366 * 86400] });

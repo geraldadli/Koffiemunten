@@ -9,10 +9,10 @@
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
-  <div class="demo-bar">Just a demo. No payment or real coffee order.</div>
+  <div class="demo-bar">Sepolia practice café · Test money only · No real drinks ordered</div>
   <header class="wrap header">
     <a class="brand" href="#main" aria-label="Koffiemunten home"><span class="brand-mark">k</span>koffiemunten<span class="brand-dot">.</span></a>
-    <nav aria-label="Main navigation"><a href="#wallet">My coffees <span id="nav-count">0</span></a><a href="#learn">Help</a></nav>
+    <nav aria-label="Main navigation"><a href="#wallet">My coffees <span id="nav-count">—</span></a><a href="#learn">Help</a><button class="button" id="connect">Connect wallet</button></nav>
   </header>
   <main id="main" class="wrap">
     <section id="campaign" aria-labelledby="hero-title">
@@ -24,28 +24,31 @@
       <div class="campaign-grid">
         <article class="cafe-card glide" aria-labelledby="cafe-name">
           <img class="cafe-photo" src="./assets/latte.png" alt="A house latte with freshly poured milk art" width="441" height="334">
-          <div class="cafe-info"><div class="cafe-heading"><h2 id="cafe-name">YOUR NEXT COFFEE SPOT.</h2><span class="pill" id="campaign-status">Taking support</span></div><p>Support the next branch, from the first pour.</p><progress id="funding-progress" max="120000000" value="90000000" aria-label="Café funding progress">75%</progress><div class="progress-caption"><span id="funded-percent">75% of the goal</span><span>Demo progress</span></div></div>
+          <div class="cafe-info"><div class="cafe-heading"><h2 id="cafe-name">YOUR NEXT COFFEE SPOT.</h2><span class="pill" id="campaign-status">Connect to check</span></div><p>Support the next branch, from the first pour.</p><progress id="funding-progress" max="100" value="0" aria-label="Café funding progress"></progress><div class="progress-caption"><span id="funded-percent">Live progress after connecting</span><span>Sepolia demo</span></div></div>
         </article>
         <form class="order-card glide" id="contribution-form">
-          <span class="eyebrow">FUTURE COFFEE. FRESH POSSIBILITIES.</span><h2>House latte</h2><p>Rp37,500 per coffee</p>
+          <span class="eyebrow">FUTURE COFFEE. FRESH POSSIBILITIES.</span><h2>House latte</h2><p id="unit-price">Connect to see the coffee price</p>
           <label for="quantity">How many coffees?</label><div class="quantity-control"><button type="button" id="minus" aria-label="One fewer coffee">−</button><input id="quantity" name="quantity" type="number" min="1" max="100" step="1" value="4" required inputmode="numeric"><button type="button" id="plus" aria-label="One more coffee">+</button></div>
           <div class="cost-row"><span>Total</span><strong id="order-total">Rp150,000</strong></div>
-          <button type="submit" class="button primary full" id="contribute-button">Save my coffees</button>
+          <button type="submit" class="button primary full" id="contribute-button" disabled>Connect wallet first</button><p id="funding-hint" class="fine-print"></p>
           <p class="fine-print">You may receive extra coffees as the café earns.<br>Extras aren't guaranteed.</p>
           <a class="small-link" href="#price-details">Price &amp; refund details</a>
         </form>
       </div>
     </section>
     <section class="wallet-section glide" id="wallet" aria-labelledby="wallet-heading">
-      <div class="section-heading"><h2 id="wallet-heading">YOUR COFFEES<span class="accent-dot">.</span></h2><button id="reset" class="text-button">Start demo again</button></div>
+      <div class="section-heading"><h2 id="wallet-heading">YOUR COFFEES<span class="accent-dot">.</span></h2><button id="refresh" class="text-button" disabled>Refresh balance</button></div>
+      <div class="connection-card"><div><strong id="connection-status" role="status">Connect your wallet to see your coffee pass.</strong><p id="wallet-address">Use the same account you used in Remix.</p></div><button class="button" id="connect-pass">Connect wallet</button></div>
+      <p id="connection-error" role="alert" hidden></p>
+      <details class="demo-funds"><summary>Practice money &amp; café funds</summary><div class="fund-grid"><div><span>Your demo rupiah</span><strong id="demo-balance">—</strong></div><div><span>Your test ETH · network fees</span><strong id="eth-balance">—</strong></div><div><span>Held by the campaign</span><strong id="reserve-balance">—</strong></div><div><span>Café wallet balance</span><strong id="treasury-balance">—</strong></div></div><p id="treasury-note">The campaign holds money for coffees until they are used.</p><p><a id="treasury-link" target="_blank" rel="noopener" hidden>View café wallet</a></p><button id="mint" class="button" disabled>Get practice money</button><p>Creates 1,000,000 demo rupiah. No cash value. Each transaction needs a little free Sepolia test ETH. <a href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia" target="_blank" rel="noopener">Get test ETH</a></p></details>
       <div class="wallet-grid">
         <div class="coffee-pass">
           <div class="pass-header"><span class="eyebrow">YOUR COFFEE PASS</span><span class="pill" id="wallet-status">Ready when you are</span></div>
-          <div class="balance-value"><strong id="coffee-balance">0</strong> <span>coffees ready to enjoy</span></div>
+          <div class="balance-value"><strong id="coffee-balance">—</strong> <span>coffees ready to enjoy</span></div>
           <p id="balance-description">Save your first coffees to fill your pass.</p>
           <div class="cup-shelf" id="cup-shelf" aria-hidden="true"></div><p class="cup-key" id="cup-key">Each filled cup is one coffee.</p>
           <dl class="wallet-totals"><div><dt id="saved-label">Saved</dt><dd id="saved-coffees">0</dd></div><div><dt>Rewards collected</dt><dd id="earned-coffees">+0</dd></div><div><dt>Enjoyed</dt><dd id="used-coffees">0</dd></div></dl>
-          <div class="wallet-actions"><button class="button primary" id="advance" hidden>Try the next step</button><button class="button primary" id="redeem" disabled>Use 1 coffee</button><p id="next-hint">Save a few coffees to get started.</p></div>
+          <div class="wallet-actions"><button class="button primary" id="finalize" hidden>Finish funding</button><button class="button primary" id="refund" hidden>Return my demo money</button><button class="button primary" id="redeem" disabled>Use 1 coffee</button><p id="next-hint">Connect to see your coffees.</p></div>
         </div>
         <div class="reward-card" id="reward-card">
           <div class="pass-header"><span class="eyebrow">A LITTLE THANK YOU</span><span class="reward-status" id="reward-status">No share yet</span></div>
@@ -54,25 +57,25 @@
           <p class="reward-value" id="reward-value" hidden></p>
           <button class="button full" id="claim-rewards" hidden>Collect my reward</button>
           <div class="reward-progress" aria-label="Reward progress"><span id="step-sales">1. Sales shared</span><span id="step-collect">2. You collect</span><span id="step-enjoy">3. Ready to sip</span></div>
-          <details class="distribution-details" id="distribution-details" hidden><summary>Where did this come from?</summary><dl><div><dt>Example café sales</dt><dd>Rp80,000,000</dd></div><div><dt>10% set aside for all supporters</dt><dd>Rp8,000,000</dd></div><div><dt>Your share of original support</dt><dd id="support-share">0%</dd></div><div><dt>Your coffee reward</dt><dd id="distribution-result">0</dd></div></dl><p>One illustrative distribution, not a forecast. Using your drinks doesn't reduce your share.</p></details>
+          <details class="distribution-details" id="distribution-details" hidden><summary>Where did this come from?</summary><dl><div><dt>Sales reports funded</dt><dd id="report-count">0</dd></div><div><dt>Your share of original support</dt><dd id="support-share">0%</dd></div><div><dt>Your rewards earned so far</dt><dd id="distribution-result">0</dd></div></dl><p>The café deposits money for these rewards. Using your drinks doesn't reduce your share.</p></details>
         </div>
       </div>
       <div class="wallet-note"><span aria-hidden="true">↗</span><p><strong>Coffee rewards, not a cash balance.</strong> You can enjoy your coffees here. Cash withdrawals and resale aren't available.</p><a href="#cash-details" id="cash-help">Can I cash out?</a></div>
-      <details class="history"><summary>My activity</summary><ol id="activity"><li>No coffees saved yet.</li></ol></details>
+      <details class="history"><summary>Transactions this visit</summary><ol id="activity"><li>Your confirmed transactions will appear here.</li></ol><p><a id="wallet-link" target="_blank" rel="noopener" hidden>See full wallet history</a></p></details>
+      <details id="owner-panel" hidden><summary>Café owner tools · demo</summary><p>Only the café owner can approve supporters and share sales. Amounts below are demo rupiah.</p><form id="approval-form" class="owner-form"><label for="supporter-address">Supporter’s wallet address</label><input id="supporter-address" required placeholder="0x…" autocomplete="off"><button class="button" type="submit">Approve supporter</button></form><form id="revenue-form" class="owner-form"><label for="sales-amount">Sales to share · demo Rp</label><input id="sales-amount" type="number" min="1" max="1000000000000" step="1" value="250000" required><p id="sales-quote"></p><button class="button" id="share-sales" type="submit">Share coffee rewards</button></form><p>These are sample sales, not verified café receipts. The owner wallet supplies the reward money.</p></details>
     </section>
     <section class="learn-section glide" id="learn" aria-labelledby="learn-heading">
       <h2 id="learn-heading">THE SMALL PRINT<span class="accent-dot">.</span></h2>
-      <details><summary>How does it work?</summary><p>Choose your coffees and support the café's funding goal. When it succeeds, your coffees become available. The café shares part of its sales as extra coffees for supporters.</p><p>This demo lets you skip ahead and try it. Nothing is purchased.</p></details>
+      <details><summary>How does it work?</summary><p>Choose your coffees and support the café's funding goal. When it succeeds, collect your coffee tickets. The café can deposit part of its sales to fund extra coffees for supporters.</p><p>This practice café uses Sepolia test tokens. Your progress stays in your wallet after refreshing. A completed campaign cannot accept more contributions.</p></details>
       <details id="price-details"><summary>Why Rp37,500? What if the goal isn't reached?</summary><p>Each coffee includes Rp25,000 set aside for your drink and Rp12,500 to help the café grow. You can request your money back if the funding goal isn't reached.</p><p>The money set aside doesn't guarantee the café will stay open or serve your drink.</p></details>
       <details><summary>What could I get as the café grows?</summary><p>Your potential return is extra coffees, based on reported café sales and your original support. This version doesn't offer cash profit or company shares. The example below isn't a forecast.</p><div class="calculator"><label for="revenue-slider">Example café sales <strong id="revenue-label">Rp80,000,000</strong></label><input id="revenue-slider" type="range" min="0" max="160000000" step="1000000" value="80000000"><p>For <b id="example-units">4</b> coffees saved: <strong class="extra-result"><span id="example-reward">0.4</span> extra coffees</strong></p></div><p>The café puts aside 10% of reported sales for supporters. Reports must arrive within 12 months of successful funding. Drinking your coffees doesn't reduce your share.</p></details>
       <details id="cash-details"><summary>Can I turn my coffees into money?</summary><p>Not in this version. Saved coffees are prepaid drinks; extra coffees are rewards from café sales. A rupiah coffee value tells you what those drinks cover, not what you can withdraw.</p><p>A possible future model would keep cash earnings separate: after the café funds your reward, you could withdraw it or convert it to coffee, once. This would need new contract terms, a payout service and legal review. It isn't available here.</p><p>Rewards depend on funded sales reports, not the café's valuation. Revenue is sales before expenses, not profit. No reward or return of your original support is guaranteed after successful funding.</p></details>
       <details><summary>Any other limits I should know?</summary><p>Use whole coffees. Leftover portions may stay unusable when rewards end. You can't sell these coffees or exchange them for cash.</p><p>The service can pause access or suspend an account. Refunds for unsuccessful funding stay available. There is no café-closure refund process after successful funding in this prototype.</p><p>This is a practice version. A real launch needs agreed customer terms, verified café sales, and legal and security review.</p></details>
-      <details><summary>For the curious: the technology</summary><p>The planned service uses blockchain records to track coffees and prevent double use. This website is a simulation; it isn't connected to a blockchain.</p><p><a href="./contracts/CoffeeCampaign.sol" target="_blank" rel="noopener">Read the Solidity contract</a></p></details>
+      <details><summary>For the curious: the technology</summary><p>This demo connects to your deployed contracts on Ethereum Sepolia. Wallet confirmations use test ETH for fees. No private keys or recovery phrases are requested.</p><p><a href="https://sepolia.etherscan.io/address/0x82Db1f5FA465Cbed6f9c7f9747a3932fa343450c" target="_blank" rel="noopener">View the coffee contract</a> · <a href="./contracts/CoffeeCampaign.sol" target="_blank" rel="noopener">Read the Solidity source</a></p></details>
     </section>
   </main>
-  <footer class="wrap"><span>koffiemunten.</span><span>Demo only · Refreshing resets your coffees.</span></footer>
-  <dialog id="review-dialog" aria-labelledby="review-title"><form method="dialog"><button class="close-button" aria-label="Close order review">×</button></form><h2 id="review-title">Save these coffees?</h2><p id="review-summary" class="review-total"></p><p>They're available when the café reaches its funding goal. Otherwise, you can request a refund.</p><p class="dialog-note">This is a demo. You won't be charged.</p><button class="button primary full" id="confirm-contribution">Confirm demo order</button></dialog>
-  <dialog id="redeem-dialog" aria-labelledby="redeem-title"><form method="dialog"><button class="close-button" aria-label="Close coffee confirmation">×</button></form><h2 id="redeem-title">One latte, please.</h2><p>Use one of your saved coffees.</p><p class="dialog-note">Practice only. No drink will be ordered.</p><button id="confirm-redeem" class="button primary full">Use 1 demo coffee</button></dialog>
+  <footer class="wrap"><span>koffiemunten.</span><span>Sepolia demo · Your coffees stay in your wallet.</span></footer>
+  <dialog id="transaction-dialog" aria-labelledby="transaction-title" aria-describedby="transaction-message"><form method="dialog"><button id="transaction-close" class="close-button" aria-label="Close transaction message">×</button></form><span class="eyebrow" id="transaction-stage">REVIEW</span><h2 id="transaction-title"></h2><p id="transaction-message" role="status" aria-live="polite"></p><p id="transaction-note" class="dialog-note">Test money only. MetaMask shows the small fee in Sepolia test ETH.</p><ol id="transaction-steps" aria-live="polite"></ol><a id="transaction-link" target="_blank" rel="noopener" hidden>View transaction receipt</a><button id="transaction-confirm" class="button primary full">Continue in wallet</button><button id="transaction-done" class="button full" hidden>Done</button></dialog>
   <div class="toast" role="status" aria-live="polite" id="toast" hidden></div>
   <template id="cup-template"><span class="cup-stamp"><svg viewBox="0 0 64 64"><rect class="cup-liquid" x="13" y="51" width="31" height="0" rx="2"/><path d="M12 25h34v15a13 13 0 0 1-13 13h-8a13 13 0 0 1-13-13zM46 28h5a8 8 0 0 1 0 16h-6M8 58h43M23 7c-7 6 7 7 0 13M34 5c-7 6 7 7 0 13"/></svg></span></template>
   <script type="module" src="./app.js"></script>

@@ -1,6 +1,6 @@
 # Koffiemunten
 
-A working browser prototype and executable Solidity starter for one café campaign. The published website is a **simulation**. It is not connected to a wallet, RPC endpoint, real payment service, or deployed contract. No money is collected. The café and campaign progress are illustrative. The card's latte photo comes from the supplied pitch deck; the hero coffee artwork is AI-generated. Native CSS scroll animations respect reduced-motion preferences and fall back to a static layout in unsupported browsers.
+A wallet-connected **Sepolia demo** and executable Solidity starter for one café campaign. The website reads the deployed contracts and sends wallet-approved testnet transactions. No real payments or café orders are supported. The card's latte photo comes from the supplied pitch deck; the hero coffee artwork is AI-generated. Native CSS scroll animations respect reduced-motion preferences.
 
 ## Run it
 
@@ -14,13 +14,20 @@ npm run compile
 npm test
 ```
 
-Try: save 10 coffees → confirm demo order → Try the next step → Collect 1 coffee → Use 1 coffee. The next-step button simulates successful funding, unlocks the 10 saved drinks and funds a sample revenue report. The reward card then shows 1 coffee waiting to collect, separate from the 10 spendable coffees. Collecting makes 11 KM; redemption leaves 10 KM. The visual pass shows up to 12 cups, with explicit overflow and fractional balances. Saved, collected and used counts reconcile to the available balance after funding. Refresh resets the local demo.
+Open the site in a browser with MetaMask (or MetaMask's mobile browser), choose Connect wallet, and use your Sepolia account. The current campaign is already funded: existing supporters can collect and redeem; it cannot accept new contributions. Owner-only tools approve wallets and fund rewards from sample sales. Every write has a review popup, wallet-confirmation message, pending state, confirmed receipt link and error handling. A contribution or revenue report may need two transactions (exact token allowance, then the action). Refreshing does not reset onchain balances.
+
+Deployed addresses (chain ID **11155111**), configured in `dist/chain.js`:
+
+- MockIDR: `0x9E606024bF88170D37Fa01cbe34aC1Ee737bd102`
+- CoffeeCampaign: `0x82Db1f5FA465Cbed6f9c7f9747a3932fa343450c`
+
+“Practice money & café funds” separates the user's demo rupiah, test ETH fees, campaign reserve and treasury balance. Redeeming burns 1 KM and pays the café from the campaign reserve, never a second charge to the supporter's payment-token wallet. Network fees still use test ETH. Full history links to the explorer; the transaction list is explicitly this visit only.
 
 ## Deploy the website on Vercel
 
 Import `geraldadli/Koffiemunten` in Vercel and deploy the `main` branch. Use the repository root (`.`), not a `site` subdirectory. The included `vercel.json` selects **Other** as the framework, skips dependency installation and building, and publishes **dist**. The static website has no runtime npm dependencies and needs no environment variables for this demo.
 
-This publishes only the browser simulation. Solidity compilation/testing remains local; deploying contracts to an EVM network and connecting the website are separate steps. Never put wallet private keys in browser code or public environment variables.
+This publishes the wallet-connected frontend. The contracts are already deployed separately on Sepolia. Never put wallet private keys in browser code or public environment variables. The pinned ethers 6.17.0 browser bundle and MIT license are included in `dist/vendor`, so hosting needs no build, CDN script or paid RPC key. Refresh the bundle from the matching installed package if upgrading ethers.
 
 For commercial use, choose Vercel Pro: Hobby is restricted to personal, non-commercial projects. See [Vercel build settings](https://vercel.com/docs/builds/configure-a-build) and [Hobby terms](https://vercel.com/docs/plans/hobby). The existing `.openai/hosting.json` remains available for Sites; it does not control Vercel deployments.
 
@@ -98,10 +105,10 @@ A contract transfers its settlement asset, not bank rupiah by itself. Fiat withd
 
 ## Website → wallet → contract
 
-The current page uses `dist/model.js` for a clearly labeled, session-only simulation. It is not a substitute for contract state. The real integration should replace its state transitions with wallet calls, using the compiled ABI:
+The current page uses `dist/chain.js` with the wallet's EIP-1193 provider. `dist/model.js` remains as a standalone educational model tested locally; it is not loaded by the live website. The integration follows this flow:
 
 ```js
-// Integration example, not wired into the demo.
+// Simplified illustration; the live adapter also checks chain/account and receipts.
 const provider = new BrowserProvider(window.ethereum);
 await provider.send('eth_requestAccounts', []);
 const signer = await provider.getSigner();
@@ -112,9 +119,9 @@ await (await payment.approve(campaignAddress, cost)).wait();
 await (await campaign.contribute(BigInt(units))).wait();
 ```
 
-Verify chain ID, deployment addresses and bytecode before offering transactions. Show token approval separately from contribution; handle rejected signatures, allowance changes, pending/reverted transactions and chain/account changes. Refresh balances from confirmed chain reads; never increment a real balance optimistically after clicking a button. Format raw values with `formatUnits`, not floating-point money arithmetic.
+The adapter verifies Sepolia, deployed code presence, payment-token address, name and decimals when connecting. This compatibility check is not a byte-for-byte source verification or audit. Each write rechecks the active account/network; account and network changes clear the displayed pass. BigInt is used for transaction amounts; rounded numbers are display-only. Balances come from a consistent block and refresh after confirmed receipts and every 30 seconds while visible and idle. Failed/rejected transactions never create fake success or optimistic balances. Timeouts show the explorer link so users can check before retrying.
 
-Static HTML/CSS/ES modules are enough for this first client and can be delivered by a CDN. Onchain balances remain authoritative. For growth, add an event indexer and paginated API for history, a database for off-chain identity/order data, and a POS integration that processes each confirmed `(chainId, transactionHash, logIndex)` exactly once and handles reorganizations. None belongs in a first browser simulation.
+Static HTML/CSS/ES modules are enough for this testnet client. No private keys are handled by the website. Revenue evidence and redemption references are random, explicitly demo-only identifiers, not verified receipts or merchant authorizations. A production POS, real sales verification, indexing and cash payouts are not implemented. The wallet adapter is exercised against an isolated EVM in `npm test`, including allowance, claim, redemption accounting, account/network changes, rejected writes and repriced transactions.
 
 ## Limits to resolve before a pilot
 
