@@ -11,8 +11,10 @@ export function compileContracts() {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   mkdirSync(path.join(root, 'artifacts'), { recursive: true });
-  for (const [name, artifact] of Object.entries(compileContracts())) writeFileSync(path.join(root, 'artifacts', `${name}.json`), JSON.stringify(artifact, null, 2));
+  const artifacts = compileContracts();
+  for (const [name, artifact] of Object.entries(artifacts)) writeFileSync(path.join(root, 'artifacts', `${name}.json`), JSON.stringify(artifact, null, 2));
   mkdirSync(path.join(root, 'dist', 'contracts'), { recursive: true });
+  writeFileSync(path.join(root, 'dist', 'contracts', 'CoffeeCampaign.json'), JSON.stringify(artifacts.CoffeeCampaign));
   for (const name of ['CoffeeCampaign.sol', 'MockIDR.sol']) copyFileSync(path.join(root, 'contracts', name), path.join(root, 'dist', 'contracts', name));
   console.log(`Compiled CoffeeCampaign and MockIDR with Solidity ${solc.version()}`);
 }

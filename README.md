@@ -14,7 +14,11 @@ npm run compile
 npm test
 ```
 
-Open the site in a browser with MetaMask (or MetaMask's mobile browser), choose Connect wallet, and use your Sepolia account. The current campaign is already funded: existing supporters can collect and redeem; it cannot accept new contributions. Owner-only tools approve wallets and fund rewards from sample sales. Every write has a review popup, wallet-confirmation message, pending state, confirmed receipt link and error handling. A contribution or revenue report may need two transactions (exact token allowance, then the action). Refreshing does not reset onchain balances.
+Open the site in a browser with MetaMask (or MetaMask's mobile browser), choose Connect wallet, and use your Sepolia account. The original campaign is already funded. **Start a fresh demo** deploys a separate 10-coffee campaign owned by your connected wallet, then asks for a second transaction to approve your participation. Both use faucet Sepolia ETH. If you cancel the second step, use **Enable my demo wallet** to finish setup without redeploying.
+
+Repeatable walkthrough: Start a fresh demo → Get practice money if needed → Save 10 coffees → Finish funding → Collect 10 coffees → Café owner tools: share Rp250,000 in sample sales → Collect 1 reward → Use 1 coffee. Use **Your campaigns** to return to an earlier café. Confirmed demo addresses and the selected café are remembered per wallet in this browser's local storage; balances remain onchain. These preferences do not sync across devices. No completed campaign is reopened or erased. Fresh demos use the same MockIDR token, a 30-day funding window, a 10-coffee goal/cap and 10% revenue allocation for one year. Your wallet plays both owner and treasury. `npm run compile` regenerates the public deployment artifact at `dist/contracts/CoffeeCampaign.json`.
+
+Every write has a review popup, wallet-confirmation message, pending state, confirmed receipt link and error handling. A contribution or revenue report may need two transactions (exact token allowance, then the action). Refreshing does not reset onchain balances.
 
 Deployed addresses (chain ID **11155111**), configured in `dist/chain.js`:
 

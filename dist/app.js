@@ -1,10 +1,36 @@
-import { CONFIG, connectWallet, readWallet, sendTransaction, ensureAllowance, cups, money, parseUnits, getAddress, receiptReference, friendlyError } from './chain.js';
+import { CONFIG, connectWallet, readWallet, sendTransaction, ensureAllowance, cups, money, parseUnits, getAddress, receiptReference, friendlyError, createDemo, selectCampaign } from './chain.js';
 const $ = selector => document.querySelector(selector);
 const rupiah = amount => 'Rp' + amount.toLocaleString('en-US', { maximumFractionDigits: 2 });
 const number = amount => amount.toLocaleString('en-US', { maximumFractionDigits: 6 });
 const coffeeCount = amount => `${number(amount)} ${amount === 1 ? 'coffee' : 'coffees'}`;
 const short = address => `${address.slice(0, 6)}…${address.slice(-4)}`;
 let session, snapshot, busy = false, revision = 0, reviewAction;
+const campaignBooks = new Map();
+let storageUnavailable = false;
+function campaignBook(address) {
+  const key = address.toLowerCase();
+  if (!campaignBooks.has(key)) {
+    let saved;
+    try { saved = JSON.parse(localStorage.getItem(`koffie-campaigns:${key}`)); } catch { /* A new device starts at the original café. */ }
+    const valid = value => typeof value === 'string' && /^0x[0-9a-f]{40}$/i.test(value);
+    const list = Array.isArray(saved?.list) ? saved.list.filter(valid) : [];
+    campaignBooks.set(key, { list, active: valid(saved?.active) && list.includes(saved.active) ? saved.active : CONFIG.campaign });
+  }
+  return campaignBooks.get(key);
+}
+function saveCampaignBook(address, book) {
+  campaignBooks.set(address.toLowerCase(), book);
+  try { localStorage.setItem(`koffie-campaigns:${address.toLowerCase()}`, JSON.stringify(book)); }
+  catch { storageUnavailable = true; }
+}
+async function activateCampaign(current, address) {
+  const version = revision, next = await selectCampaign(current, address), data = await readWallet(next);
+  if (version !== revision || session !== current) throw Error('Your wallet changed. Reconnect to load the new café.');
+  session = next; snapshot = data;
+  const book = campaignBook(current.address); book.active = address; saveCampaignBook(current.address, book);
+  render();
+  return next;
+}
 const providers = new Map();
 window.addEventListener('eip6963:announceProvider', event => {
   if (event.detail?.info?.rdns && event.detail?.provider?.request) providers.set(event.detail.info.rdns, event.detail.provider);
@@ -90,11 +116,17 @@ async function connect() {
     if (rpc?.on && !observed.has(rpc)) {
       rpc.on('accountsChanged', disconnected); rpc.on('chainChanged', disconnected); rpc.on('disconnect', disconnected); observed.add(rpc);
     }
-    const connected = await connectWallet(rpc), version = ++revision;
+    let connected = await connectWallet(rpc);
+    const version = ++revision, book = campaignBook(connected.address);
+    let restored = true;
+    if (book.active !== CONFIG.campaign) {
+      try { connected = await selectCampaign(connected, book.active); await readWallet(connected); }
+      catch { connected = await selectCampaign(connected, CONFIG.campaign); book.active = CONFIG.campaign; restored = false; }
+    }
     const data = await readWallet(connected);
     if (version !== revision) { connected.provider.destroy(); throw Error('Your wallet changed while connecting. Please connect again.'); }
     session = connected; snapshot = data; $('#connection-error').hidden = true;
-    popup('Your coffee pass is connected', 'Your balance comes directly from Sepolia. No money was moved.', 'Connected');
+    popup('Your coffee pass is connected', restored ? 'Your balance comes directly from Sepolia. Start a fresh demo to try the full journey.' : 'Your saved demo was unavailable. The original café is selected; you can retry using Your campaigns.', 'Connected');
   } catch (error) { session = undefined; snapshot = undefined; showError(error); }
   finally { busy = false; $('#transaction-close').disabled = false; $('#transaction-done').hidden = false; render(); }
 }
@@ -128,6 +160,19 @@ function updateQuote() {
 }
 function render() {
   const s = snapshot, ready = !!session && !!s, available = ready ? cups(s.balanceOf) : 0;
+  $('#new-demo').disabled = busy;
+  $('#campaign-picker').disabled = busy || !ready;
+  const book = session ? campaignBook(session.address) : { list: [] };
+  const choices = [CONFIG.campaign, ...book.list.filter(address => address !== CONFIG.campaign)];
+  $('#campaign-picker').replaceChildren(...choices.map((address, index) => {
+    const option = document.createElement('option'); option.value = address;
+    option.textContent = index ? `Practice café ${index} · ${short(address)}` : 'Original café';
+    option.selected = address.toLowerCase() === (session?.config.campaign || CONFIG.campaign).toLowerCase(); return option;
+  }));
+  $('#active-campaign-link').href = `${CONFIG.explorer}/address/${session?.config.campaign || CONFIG.campaign}`;
+  $('#demo-guide').textContent = !ready ? 'Connect your wallet, then start a fresh 10-coffee demo. Repeat whenever you like.' : s.phase === 1n ? 'This café is funded. Collect, share rewards and use a coffee—or start again with a fresh café.' : s.phase === 2n ? 'This campaign ended. Request your refund or start a fresh café.' : !s.approved ? 'Next: enable your demo wallet to join this café.' : s.totalUnits === s.capUnits ? 'All 10 coffees funded! Next: Finish funding in your coffee pass.' : 'Get practice money, save 10 coffees, then finish funding. You play both supporter and café owner.';
+  $('#enable-wallet').hidden = !ready || !s.isOwner || s.approved;
+  $('#enable-wallet').disabled = busy;
   $('#connect').textContent = ready ? short(session.address) : 'Connect wallet';
   $('#connect-pass').hidden = ready;
   $('#connection-status').textContent = ready ? 'Connected to Sepolia · test money only' : 'Connect your wallet to see your coffee pass.';
@@ -175,7 +220,7 @@ function render() {
   const funding = ready && s.phase === 0n && s.now < s.deadline && s.totalUnits < s.capUnits;
   $('#contribute-button').disabled = busy || !funding || !s.approved || s.paused;
   $('#contribute-button').textContent = !ready ? 'Connect wallet first' : s.phase === 1n ? 'This café is fully funded' : !funding ? 'Funding closed' : 'Save my coffees';
-  $('#funding-hint').textContent = ready && s.phase === 1n ? 'Already supported in Remix? Your coffees are in your pass below.' : ready && !s.approved ? 'Ask the café owner to approve your wallet first.' : '';
+  $('#funding-hint').textContent = ready && s.phase === 1n ? 'Start a fresh demo above to test funding again.' : ready && !s.approved ? s.isOwner ? 'Enable your demo wallet to begin.' : 'Ask the café owner to approve your wallet first.' : '';
   for (const id of ['connect', 'connect-pass']) $(`#${id}`).disabled = busy;
   for (const id of ['refresh', 'mint']) $(`#${id}`).disabled = busy || !ready;
   $('#demo-balance').textContent = ready ? rupiah(money(s.cash)) : '—';
@@ -197,6 +242,33 @@ async function activeSession() {
   if (!snapshot) throw Error('Refresh your wallet before continuing.');
   return session;
 }
+$('#new-demo').addEventListener('click', () => {
+  if (!session || !snapshot) { connect(); return; }
+  review('Start a fresh demo?', 'Create your own 10-coffee café, then enable your wallet. Confirm two transactions in MetaMask using free Sepolia test ETH. You play both supporter and café. Previous campaigns remain available in Your campaigns.', async () => {
+    const current = await activeSession();
+    const response = await fetch('./contracts/CoffeeCampaign.json');
+    if (!response.ok) throw Error('The demo setup could not load. Refresh and try again.');
+    const address = await createDemo(current, await response.json(), updateTransaction);
+    // Save the confirmed address BEFORE optional approval, so cancelling step two is recoverable.
+    const book = campaignBook(current.address);
+    if (!book.list.includes(address)) book.list.push(address);
+    book.active = address; saveCampaignBook(current.address, book);
+    const next = await activateCampaign(current, address);
+    $('#quantity').value = '10';
+    await sendTransaction(next, 'Enable my demo wallet', () => next.campaign.setApproved(next.address, true), updateTransaction);
+    return 'Your fresh café is ready: 0 of 10 coffees funded. Get practice money if needed, then Save my coffees.' + (storageUnavailable ? ' Browser storage is unavailable; save the café address from View active café before closing this page.' : ' It will be remembered in this browser.');
+  });
+});
+$('#campaign-picker').addEventListener('change', () => {
+  const address = $('#campaign-picker').value;
+  resetPopup();
+  run(async () => { const current = await activeSession(); await activateCampaign(current, address); return 'Campaign switched. Your coffee pass now shows this café only.'; });
+});
+$('#enable-wallet').addEventListener('click', () => review('Enable your demo wallet?', 'Allow your wallet to save, collect and use coffees in this practice café. No demo rupiah moves.', async () => {
+  const current = await activeSession();
+  await sendTransaction(current, 'Enable my demo wallet', () => current.campaign.setApproved(current.address, true), updateTransaction);
+  return 'Your wallet is enabled. You can now save coffees.';
+}));
 $('#quantity').addEventListener('input', updateQuote);
 $('#minus').addEventListener('click', () => { $('#quantity').value = Math.max(1, (quantity() || 1) - 1); updateQuote(); });
 $('#plus').addEventListener('click', () => { $('#quantity').value = Math.min(100, (quantity() || 0) + 1); updateQuote(); });

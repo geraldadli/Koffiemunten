@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHardhatRuntimeEnvironment } from 'hardhat/hre';
 import { BrowserProvider, ContractFactory, id, MaxUint256, parseUnits } from 'ethers';
 import { compileContracts } from '../scripts/compile.mjs';
-import { CONFIG, connectWallet, readWallet, sendTransaction, ensureAllowance, friendlyError, receiptReference } from '../dist/chain.js';
+import { CONFIG, connectWallet, readWallet, sendTransaction, ensureAllowance, friendlyError, receiptReference, createDemo, selectCampaign } from '../dist/chain.js';
 
 const artifacts = compileContracts();
 const money = n => parseUnits(String(n), 6);
@@ -184,6 +184,26 @@ test('Solidity escrow, reserve, pro-rata rewards, redemption and failure protect
       const result = await transaction('Speed up', async () => ({ hash: '0xoriginal', wait: async () => { throw { code: 'TRANSACTION_REPLACED', cancelled: false, reason: 'repriced', receipt }; } }));
       assert.equal(result.hash, receipt.hash);
       await assert.rejects(transaction('Reverted', async () => ({ hash: '0xfailed', wait: async () => ({ status: 0 }) })), /did not complete/);
+      const firstAddress = await createDemo(wallet, artifacts.CoffeeCampaign, update);
+      const fresh = await selectCampaign(wallet, firstAddress);
+      const empty = await readWallet(fresh);
+      assert.equal(empty.phase, 0n);
+      assert.equal(empty.totalUnits, 0n);
+      assert.equal(empty.capUnits, 10n);
+      assert.equal(empty.isOwner, true);
+      assert.equal(empty.treasury, alice.address);
+      assert.equal(empty.approved, false, 'deployment and wallet approval are independent recoverable steps');
+      await sendTransaction(fresh, 'Enable wallet', () => fresh.campaign.setApproved(fresh.address, true), update);
+      await ensureAllowance(fresh, money(375000), update);
+      await sendTransaction(fresh, 'Fund fresh café', () => fresh.campaign.contribute(10), update);
+      await sendTransaction(fresh, 'Finish fresh café', () => fresh.campaign.finalize(), update);
+      await sendTransaction(fresh, 'Collect fresh coffees', () => fresh.campaign.claim(), update);
+      assert.equal((await readWallet(fresh)).balanceOf, km(10));
+      const secondAddress = await createDemo(fresh, artifacts.CoffeeCampaign, update);
+      assert.notEqual(secondAddress, firstAddress);
+      assert.equal((await readWallet(await selectCampaign(fresh, secondAddress))).totalUnits, 0n);
+      assert.equal((await readWallet(await selectCampaign(fresh, firstAddress))).balanceOf, km(10));
+      assert.equal((await readWallet(wallet)).balanceOf, km(2), 'older campaign balances are untouched');
     } finally { wallet.provider.destroy(); }
   });
   await t.test('reporting expires but existing credits remain redeemable', async () => {

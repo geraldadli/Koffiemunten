@@ -15,6 +15,7 @@
     <nav aria-label="Main navigation"><a href="#wallet">My coffees <span id="nav-count">—</span></a><a href="#learn">Help</a><button class="button" id="connect">Connect wallet</button></nav>
   </header>
   <main id="main" class="wrap">
+    <section class="demo-controls" aria-labelledby="demo-heading"><div><span class="eyebrow">YOUR PRACTICE CAFÉ</span><h2 id="demo-heading">Try the whole journey.</h2><p id="demo-guide">Connect your wallet, then start a fresh 10-coffee demo. Repeat whenever you like.</p></div><div class="demo-control-actions"><button id="new-demo" class="button">Start a fresh demo</button><label for="campaign-picker">Your campaigns</label><select id="campaign-picker" disabled><option>Original café</option></select><a id="active-campaign-link" target="_blank" rel="noopener" href="https://sepolia.etherscan.io/address/0x82Db1f5FA465Cbed6f9c7f9747a3932fa343450c">View active café</a></div></section>
     <section id="campaign" aria-labelledby="hero-title">
       <div class="intro">
         <div class="hero-copy"><span class="eyebrow">YOUR DAILY CUP. THEIR NEXT CHAPTER.</span><h1 id="hero-title">GOOD COFFEE.<br>BIG DREAMS<span class="accent-dot">.</span></h1><p>Help your café open its next spot.<br>Share in its growth, one coffee at a time.</p><a class="button hero-button" href="#back-cafe">Back the next café</a><span class="hero-footnote">Potential rewards in coffee. No guaranteed return.</span></div>
@@ -30,7 +31,7 @@
           <span class="eyebrow">FUTURE COFFEE. FRESH POSSIBILITIES.</span><h2>House latte</h2><p id="unit-price">Connect to see the coffee price</p>
           <label for="quantity">How many coffees?</label><div class="quantity-control"><button type="button" id="minus" aria-label="One fewer coffee">−</button><input id="quantity" name="quantity" type="number" min="1" max="100" step="1" value="4" required inputmode="numeric"><button type="button" id="plus" aria-label="One more coffee">+</button></div>
           <div class="cost-row"><span>Total</span><strong id="order-total">Rp150,000</strong></div>
-          <button type="submit" class="button primary full" id="contribute-button" disabled>Connect wallet first</button><p id="funding-hint" class="fine-print"></p>
+          <button type="submit" class="button primary full" id="contribute-button" disabled>Connect wallet first</button><button type="button" class="button full" id="enable-wallet" hidden>Enable my demo wallet</button><p id="funding-hint" class="fine-print"></p>
           <p class="fine-print">You may receive extra coffees as the café earns.<br>Extras aren't guaranteed.</p>
           <a class="small-link" href="#price-details">Price &amp; refund details</a>
         </form>

@@ -1,4 +1,4 @@
-import { BrowserProvider, Contract, formatUnits, parseUnits, id, getAddress } from './vendor/ethers.min.js';
+import { BrowserProvider, Contract, ContractFactory, formatUnits, parseUnits, id, getAddress } from './vendor/ethers.min.js';
 
 export const CONFIG = Object.freeze({
   chainId: 11155111n,
@@ -106,6 +106,27 @@ export async function ensureAllowance(session, amount, update) {
   if (allowance < amount) {
     await sendTransaction(session, 'Allow demo rupiah', () => session.token.approve(session.config.campaign, amount), update);
   }
+}
+
+export async function selectCampaign(session, address) {
+  await assertSession(session.rpc, session.address);
+  address = getAddress(address);
+  const campaign = new Contract(address, CAMPAIGN_ABI, session.signer);
+  if ((await campaign.paymentToken()).toLowerCase() !== session.config.asset.toLowerCase()) throw Error('This café uses a different payment token. Choose another demo.');
+  return { ...session, campaign, config: { ...session.config, campaign: address } };
+}
+
+export async function createDemo(session, artifact, update) {
+  await assertSession(session.rpc, session.address);
+  const block = await session.provider.getBlock('latest');
+  const factory = new ContractFactory(artifact.abi, artifact.bytecode, session.signer);
+  const terms = [parseUnits('25000', 6), parseUnits('37500', 6), 10, 10, block.timestamp + 30 * 86400, 365 * 86400, 1000];
+  const receipt = await sendTransaction(session, 'Create fresh demo café', async () => {
+    const deployed = await factory.deploy(session.address, session.address, session.config.asset, terms);
+    return deployed.deploymentTransaction();
+  }, update);
+  if (!receipt.contractAddress) throw Error('The deployment receipt has no café address. Check the receipt before creating another.');
+  return receipt.contractAddress;
 }
 
 export function receiptReference() { return id(`demo-coffee:${crypto.randomUUID()}`); }
