@@ -14,7 +14,7 @@ npm run compile
 npm test
 ```
 
-Try: hold 10 coffees → Run café scenario → complete campaign → submit revenue report → close dialog → claim credits → redeem a latte. That produces 11 KM, then 10 KM after redemption. Refresh resets the local demo.
+Try: save 10 coffees → confirm demo order → Try the next step → Use 1 coffee. The next-step button simulates successful funding, a funded revenue report and claiming the coffees together. That produces 11 KM, then 10 KM after redemption. Refresh resets the local demo.
 
 ## What Solidity does
 

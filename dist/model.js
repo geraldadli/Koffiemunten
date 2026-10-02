@@ -10,31 +10,31 @@ export function act(state, action, value) {
   switch (action) {
     case 'connect': next.connected = true; break;
     case 'contribute':
-      if (state.funded) throw Error('This campaign has closed. Reset the demo to contribute again.');
-      if (!Number.isInteger(value) || value < 1 || value > 100 || state.units + value > TERMS.goalUnits) throw Error('Choose 1–100 tokens within the remaining campaign capacity.');
+      if (state.funded) throw Error('The café reached its goal. Start the demo again to save more coffees.');
+      if (!Number.isInteger(value) || value < 1 || value > 100 || state.units + value > TERMS.goalUnits) throw Error('Choose 1–100 coffees, up to the number still available.');
       next.connected = true; next.mine += value; next.units += value;
-      add('Order held', `${value} future coffees · payment held in demo escrow`, `+${value} pending KM`); break;
+      add('Coffees saved', `${value} coffees for later · no payment taken`, `+${value} coffees pending`); break;
     case 'finalize':
-      if (state.funded) throw Error('The campaign has already closed.');
+      if (state.funded) throw Error('The café has already reached its goal.');
       next.funded = true; next.units = TERMS.goalUnits; next.reserve = next.units * TERMS.coffeePrice;
-      add('Campaign funded', 'Sample supporters filled the target; growth capital released.', '100% funded'); break;
+      add('Café goal reached', 'Other supporters helped the café reach its goal in this demo.', 'Goal reached'); break;
     case 'report':
-      if (!state.funded) throw Error('Complete the campaign before reporting revenue.');
-      if (state.reportCount) throw Error('This sample revenue period has already been reported.');
+      if (!state.funded) throw Error('Reach the café goal first.');
+      if (state.reportCount) throw Error('These extra coffees have already been shared.');
       next.reportCount = 1; next.rewardPool = 8000000 / TERMS.coffeePrice; next.reserve += 8000000;
-      add('Revenue allocation deposited', 'Rp8m of a sample Rp80m report funds coffee rewards.', '+320 pool KM'); break;
+      add('Extra coffees shared', 'The café shared part of its sales with supporters.', '320 coffees shared'); break;
     case 'claim': {
-      if (!state.funded) throw Error('Coffee credits become available after successful funding.');
+      if (!state.funded) throw Error('Your coffees become available when the café reaches its goal.');
       const initial = state.initialClaimed ? 0 : state.mine;
       const reward = rewards(state);
-      if (initial + reward <= 0) throw Error('No credits are available to claim.');
+      if (initial + reward <= 0) throw Error('There are no more coffees to collect.');
       next.balance += initial + reward; next.initialClaimed = true; next.claimedRewards += reward;
-      add('Coffee credits claimed', `${initial} original + ${Number(reward.toFixed(6))} reward credits`, `+${Number((initial + reward).toFixed(6))} KM`); break;
+      add('Coffees ready to enjoy', `${initial} saved + ${Number(reward.toFixed(6))} extra coffees`, `+${Number((initial + reward).toFixed(6))} coffees`); break;
     }
     case 'redeem':
-      if (!state.funded || state.balance < 1 || state.reserve < TERMS.coffeePrice) throw Error('Claim at least 1 KM before redeeming a latte.');
+      if (!state.funded || state.balance < 1 || state.reserve < TERMS.coffeePrice) throw Error('You need one whole coffee ready to enjoy.');
       next.balance -= 1; next.reserve -= TERMS.coffeePrice; next.redeemed += 1;
-      add('Latte redeemed', `Demo order #${String(next.redeemed).padStart(4, '0')} · Rp25,000 released to café`, '−1 KM'); break;
+      add('Coffee used', `Demo order #${String(next.redeemed).padStart(4, '0')} · practice only`, '−1 coffee'); break;
     default: throw Error('Unknown demo action.');
   }
   return next;
